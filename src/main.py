@@ -1,19 +1,22 @@
-import os, sys
+import os, sys, copy, time
+import numpy as np
 import soundfile as sf
+
+from basic_pitch.inference import predict
+from basic_pitch import ICASSP_2022_MODEL_PATH
 
 from PyQt6 import QtCore, QtWidgets, QtMultimedia
 import pyqtgraph as pg
+# Run the following command to re-generate updated GUI: pyuic6 mainwindow.ui -o main_window.py
+from src.main_window import Ui_MainWindow
 
-from main_window import Ui_MainWindow
+from event_min_heap import EventMinHeap
+from event_red_black_tree import EventRBTree
 
-from convertion_utils import *
-
-""" ==================== Config ==================== """
-FRAME_LENGTH = 2048
-HOP_LENGTH = 512     # default hop length for re-synthesize
-SQUARE_AMP = 0.3     # output loudness
-MIN_NOTE_DUR = 0.05   # in seconds, to drop short blips
-
+""" ==================== Helper ==================== """
+def sec_to_minsec(sec):
+    minute, second = divmod(sec, 60)
+    return '%02d:%02d' % (minute, second)
 
 def plot_data(waveform, data, sr):
     scene = QtWidgets.QGraphicsScene()
@@ -73,7 +76,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.input_file_btn.clicked.connect(self.choose_file)
         self.convert_btn.clicked.connect(self.convert)
         self.playpause_btn.clicked.connect(self.play_pause)
-        self.analyze_btn.clicked.connect(self.analyze_runtime)
 
     def choose_file(self):
         self.INPUT_PATH, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -84,7 +86,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         if self.INPUT_PATH:
             self.INPUT_DATA, self.INPUT_SR = sf.read(self.INPUT_PATH)
-            self.INPUT_DATA = to_mono(self.INPUT_DATA)
+
+            # convert multi-channel audio to monophonic
+            if self.INPUT_DATA.ndim > 1:
+                self.INPUT_DATA = self.INPUT_DATA.mean(axis=1)
+
             self.LENGTH = len(self.INPUT_DATA) / self.INPUT_SR
 
             if self.OUTPUT_SR:
@@ -107,25 +113,116 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.OUTPUT_FORMAT = self.output_format.currentText()
         self.OUTPUT_PATH = f"./output/{os.path.splitext(os.path.basename(self.INPUT_PATH))[0]}_8bit{self.OUTPUT_FORMAT}"
 
-        f0, self.TIMES = f0_extraction(self.INPUT_DATA, self.INPUT_SR, FRAME_LENGTH, HOP_LENGTH)
-        self.MIDI = to_midi(f0)
+        # predict returns a PrettyMIDI object containing transcribed MIDI data
+        _, midi_data, _ = predict(
+            self.INPUT_PATH,
+            ICASSP_2022_MODEL_PATH
+        )
 
-        note_events = frames_to_events(self.MIDI, self.TIMES, MIN_NOTE_DUR, self.INPUT_SR)
+        events = []
+        for inst in midi_data.instruments:
+            for note in inst.notes:
+                # Store as tuple: (Timestamp, Type, NoteNumber)
+                # Type 1 = Note ON, Type 0 = Note OFF
+                events.append((note.start, 1, note.pitch))
+                events.append((note.end, 0, note.pitch))
 
-        out_list = np.zeros_like(self.INPUT_DATA)
-        out_list = synthesize_list(out_list, note_events, self.INPUT_SR, SQUARE_AMP)
+        self.num_data_points.setText(f"Number of Audio Frames (N) = {len(events)}")
 
-        self.OUTPUT_DATA = out_list
+        copy1, copy2, copy3 = [copy.deepcopy(events) for _ in range(3)]
 
-        max_abs = np.max(np.abs(self.OUTPUT_DATA))
-        if max_abs > 1.0:
-            self.OUTPUT_DATA = self.OUTPUT_DATA / max_abs
+        ''' data structure comparisons '''
+        # Python built-in list sort, by Timestamp (item 0 in tuple)
+        t0 = time.perf_counter()
+        copy1.sort(key=lambda x: x[0])
+        t1 = time.perf_counter() - t0
+        self.runtime1.setText(f"Runtime: {t1 * 1000:.2f} ms")
+
+        # Self-implemented Min Heap
+        t0 = time.perf_counter()
+        heap = EventMinHeap()
+        heap.build(copy2)
+        heap_sorted_events = []
+        while not heap.empty():
+            heap_sorted_events.append(heap.pop())
+        t2 = time.perf_counter() - t0
+        self.runtime2.setText(f"Runtime: {t2 * 1000:.2f} ms")
+        self.num_comp_2.setText(f"# comparisons: {heap.key_comparisons}")
+        self.num_swap_2.setText(f"# swaps: {heap.swaps}")
+
+        # Self-implemented Red-Black Tree
+        t0 = time.perf_counter()
+        rbt = EventRBTree()
+        for timestamp, evt_type, note in copy3:
+            rbt.push(timestamp, evt_type, note)
+        rbt_sorted_events = []
+        while not rbt.empty():
+            rbt_sorted_events.append(rbt.pop_next())
+        t3 = time.perf_counter() - t0
+
+        self.runtime3.setText(f"Runtime: {t3 * 1000:.2f} ms")
+        self.num_comp_3.setText(f"# comparisons: {rbt.key_comparisons}")
+        self.num_rot_3.setText(f"# rotations: {rbt.rotations}")
+
+        dt = 1.0 / self.OUTPUT_SR
+
+        audio_buffer = []
+        current_time = 0.0
+
+        # Maps Note_Number -> Current_Phase
+        active_voices = {}
+
+        # Iterate through the sorted timeline
+        for timestamp, event_type, note_pitch in copy1:
+
+            # A. Generate audio for the gap between the last event and this one
+            duration = timestamp - current_time
+
+            if duration > 0:
+                num_samples = int(duration * self.OUTPUT_SR)
+                if num_samples > 0:
+                    # Create an array filled with zero for this chunk
+                    chunk = np.zeros(num_samples)
+
+                    if active_voices:
+                        t = np.arange(num_samples) * dt
+
+                        for pitch, phase in active_voices.items():
+                            # pitch-to-frequency conversion
+                            freq = 440.0 * (2.0 ** ((pitch - 69) / 12.0))
+
+                            # 8-Bit Square Wave
+                            wave = np.sign(np.sin(2 * np.pi * freq * t + phase))
+                            chunk += wave * 0.1  # Volume scaling
+
+                            # Update phase for the next chunk to prevent clicking
+                            active_voices[pitch] += 2 * np.pi * freq * (num_samples * dt)
+                            active_voices[pitch] %= (2 * np.pi)
+
+                    audio_buffer.append(chunk)
+                    current_time += (num_samples * dt)
+
+            if event_type == 1:  # Note ON
+                if note_pitch not in active_voices:
+                    active_voices[note_pitch] = 0.0  # Start phase at 0
+            else:  # Note OFF
+                if note_pitch in active_voices:
+                    del active_voices[note_pitch]
+
+        # Concatenate all chunks
+        full_audio = np.concatenate(audio_buffer)
+
+        # Normalize (prevent distortion)
+        max_val = np.max(np.abs(full_audio))
+        if max_val > 0:
+            full_audio = full_audio / max_val
+
+        self.OUTPUT_DATA = full_audio
 
         self.plot_rslt()
         self.playpause_btn.setEnabled(True)
         self.playpause_btn.setText("Play")
         self.audio_input.setEnabled(True)
-        self.analyze_btn.setEnabled(True)
 
         sf.write(self.OUTPUT_PATH, self.OUTPUT_DATA, self.OUTPUT_SR)
 
@@ -153,26 +250,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.playpause_btn.setText("Play")
             self.player.pause()
 
-    def analyze_runtime(self):
-        """ Analyze the runtime of sorting unordered frames using different data structures """
-        if not self.OUTPUT_SR:
-            return
-
-        n = len(self.MIDI)
-        self.num_data_points.setText(f"Number of Audio Frames (N) = {n}")
-
-        indices = np.random.permutation(n)
-        unordered_frames = [(self.TIMES[i], self.MIDI[i]) for i in indices]
-
-        li = ds_comparison(unordered_frames)
-
-        self.runtime1.setText(f"Runtime: {li[0]:.2f} ms")
-        self.runtime2.setText(f"Runtime: {li[1]:.2f} ms")
-        self.runtime3.setText(f"Runtime: {li[2]:.2f} ms")
-        self.num_comp_2.setText(f"# comparisons: {li[3]}")
-        self.num_swap_2.setText(f"# swaps: {li[4]}")
-        self.num_comp_3.setText(f"# comparisons: {li[5]}")
-        self.num_rot_3.setText(f"# rotations: {li[6]}")
 
 
 if __name__ == "__main__":
@@ -181,4 +258,9 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     app.exec()
+
+
+
+
+
 
