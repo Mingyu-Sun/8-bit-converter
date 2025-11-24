@@ -297,7 +297,7 @@ class Ui_MainWindow(object):
         self.lable_rslt.setText(_translate("MainWindow", "8-bit"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_preview), _translate("MainWindow", "Preview"))
         self.num_data_points.setText(_translate("MainWindow", "Number of Audio Events (N) = --"))
-        self.label_ds1.setText(_translate("MainWindow", "DS 1: heapq (Python built-in module)"))
+        self.label_ds1.setText(_translate("MainWindow", "DS 1: list.sort() (Python built-in method)"))
         self.runtime1.setText(_translate("MainWindow", "Runtime: -- ms"))
         self.label_ds2.setText(_translate("MainWindow", "DS 2: Priority Queue (Min-Heap)"))
         self.runtime2.setText(_translate("MainWindow", "Runtime: -- ms"))

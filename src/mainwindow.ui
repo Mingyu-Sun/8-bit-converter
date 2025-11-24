@@ -400,7 +400,7 @@
            <item>
             <widget class="QLabel" name="label_ds1">
              <property name="text">
-              <string>DS 1: heapq (Python built-in module)</string>
+              <string>DS 1: list.sort() (Python built-in method)</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>

@@ -7,7 +7,7 @@ from basic_pitch import ICASSP_2022_MODEL_PATH
 
 from PyQt6 import QtCore, QtWidgets, QtMultimedia
 import pyqtgraph as pg
-# Run the following command to re-generate updated GUI: pyuic6 mainwindow.ui -o main_window.py
+# Run the following command to re-generate updated GUI: pyuic6 src/mainwindow.ui -o src/main_window.py
 from src.main_window import Ui_MainWindow
 
 from event_min_heap import EventMinHeap
@@ -111,7 +111,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.OUTPUT_SR = int(self.target_SR.currentText())
         self.OUTPUT_FORMAT = self.output_format.currentText()
-        self.OUTPUT_PATH = f"./output/{os.path.splitext(os.path.basename(self.INPUT_PATH))[0]}_8bit{self.OUTPUT_FORMAT}"
+        self.OUTPUT_PATH = f"{os.path.splitext(os.path.basename(self.INPUT_PATH))[0]}_8bit{self.OUTPUT_FORMAT}"
 
         # predict returns a PrettyMIDI object containing transcribed MIDI data
         _, midi_data, _ = predict(
@@ -193,7 +193,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
                             # 8-Bit Square Wave
                             wave = np.sign(np.sin(2 * np.pi * freq * t + phase))
-                            chunk += wave * 0.1  # Volume scaling
+                            chunk += wave * 0.5  # Volume scaling
 
                             # Update phase for the next chunk to prevent clicking
                             active_voices[pitch] += 2 * np.pi * freq * (num_samples * dt)
@@ -250,17 +250,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.playpause_btn.setText("Play")
             self.player.pause()
 
-
-
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     window = MainWindow()
     window.show()
     app.exec()
-
-
-
-
-
-
