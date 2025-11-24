@@ -372,16 +372,6 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QPushButton" name="analyze_btn">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Start Analyzing &gt;&gt;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QLabel" name="num_data_points">
           <property name="maximumSize">
            <size>
@@ -390,7 +380,7 @@
            </size>
           </property>
           <property name="text">
-           <string>Number of Audio Frames (N) = --</string>
+           <string>Number of Audio Events (N) = --</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignmentFlag::AlignCenter</set>
