@@ -127,7 +127,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 events.append((note.start, 1, note.pitch))
                 events.append((note.end, 0, note.pitch))
 
-        self.num_data_points.setText(f"Number of Audio Frames (N) = {len(events)}")
+        self.num_data_points.setText(f"Number of Audio Events (N) = {len(events)}")
 
         copy1, copy2, copy3 = [copy.deepcopy(events) for _ in range(3)]
 
