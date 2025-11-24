@@ -275,7 +275,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "8-bit Convertor"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "8-bit Converter"))
         self.input_file_btn.setText(_translate("MainWindow", "Choose Input File..."))
         self.inputInfo.setText(_translate("MainWindow", "Input File Information"))
         self.lable_inputSR.setText(_translate("MainWindow", "Sample Rate (Hz)"))
