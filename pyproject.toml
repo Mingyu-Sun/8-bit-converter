@@ -13,5 +13,5 @@ readme = "README.md"
 requires-python = ">=3.9"
 
 [project.scripts]
-"8-bit-cli" = "cli:run_cli" # CLI Entry Point
-"8-bit-gui" = "gui:run_gui" # GUI Entry Point
+"8_bit_cli" = "cli:run_cli" # CLI Entry Point
+"8_bit_gui" = "gui:run_gui" # GUI Entry Point

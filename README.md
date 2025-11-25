@@ -15,13 +15,13 @@ To use the converter, follow the steps below:
     ```
 2. In the project directory, download dependencies:
     ```shell
-    pip install soundfile numpy basic_pitch
+    pip install soundfile numpy basic_pitch PyQt6 pyqtgraph
     ```
 3. In the project directory (make sure `pyproject.toml` presents), install the package in editable mode:
     ```shell
     pip install -e .
     ```
-4. Now you can use `8-bit-cli` and `8-bit-gui` to invoke CLI and GUI from any directory.
+4. Now you can use `8_bit_cli` and `8_bit_gui` to invoke CLI and GUI from any directory.
 
 ## Credits
 All test are done by using music from [Free Music Archive](https://freemusicarchive.org/home).
