@@ -1,6 +1,11 @@
-import copy, time
-from pathlib import Path
-from dataclasses import dataclass
+# Silence basic-pitch logging
+import logging
+logging.basicConfig(level=logging.ERROR)
+import io
+from contextlib import redirect_stdout
+
+import copy
+import time
 import numpy as np
 
 from basic_pitch.inference import predict
@@ -8,12 +13,6 @@ from basic_pitch import ICASSP_2022_MODEL_PATH
 
 from event_min_heap import EventMinHeap
 from event_red_black_tree import EventRBTree
-
-@dataclass
-class AnalysisResult:
-    file: Path
-    lines: int
-    words: int
 
 def sec_to_minsec(sec):
     minute, second = divmod(sec, 60)
@@ -27,11 +26,13 @@ def to_mono(data):
 
 def to_events(input_path):
     """ Convert audio data to events """
-    # predict returns a PrettyMIDI object containing transcribed MIDI data
-    _, midi_data, _ = predict(
-        input_path,
-        ICASSP_2022_MODEL_PATH
-    )
+    f = io.StringIO() # Silence basic-pitch logging
+    with redirect_stdout(f):
+        # predict returns a PrettyMIDI object containing transcribed MIDI data
+        _, midi_data, _ = predict(
+            input_path,
+            ICASSP_2022_MODEL_PATH
+        )
 
     events = []
     for inst in midi_data.instruments:

@@ -1,3 +1,6 @@
+import os
+import soundfile as sf
+
 from core import *
 
 from PyQt6 import QtCore, QtWidgets, QtMultimedia
@@ -21,7 +24,6 @@ def plot_data(waveform, data, sr):
 
     plot.plot(t, y)
 
-    plot.hideButtons()
     plot.setXRange(t[0], t[-1])
     plot.setYRange(-1.05, 1.05)
 
@@ -107,7 +109,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.runtime1.setText(f"Runtime: {runtime[0] * 1000:.2f} ms")
         self.runtime2.setText(f"Runtime: {runtime[1] * 1000:.2f} ms")
-        self.runtime3.setText(f"Runtime: {runtime[3] * 1000:.2f} ms")
+        self.runtime3.setText(f"Runtime: {runtime[2] * 1000:.2f} ms")
         self.num_comp_2.setText(f"# comparisons: {num_of_operation[0]}")
         self.num_swap_2.setText(f"# swaps: {num_of_operation[1]}")
         self.num_comp_3.setText(f"# comparisons: {num_of_operation[2]}")
@@ -147,7 +149,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.player.pause()
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication([])
 
     window = MainWindow()
     window.show()
