@@ -6,8 +6,6 @@ import soundfile as sf
 from core import *
 
 """ ==================== Helper ==================== """
-
-
 def validate_input_file(filename):
     """
     Validates the input file format, then checks for the filename in two locations:
@@ -41,6 +39,7 @@ def bordered(text):
         res.append('│' + (s + ' ' * width)[:width] + '│')
     res.append('└' + '─' * width + '┘')
     return '\n'.join(res)
+
 
 class ConverterCLI(cmd.Cmd):
     intro = (' 8-bit Converter '.center(60, '=') + '\n' +

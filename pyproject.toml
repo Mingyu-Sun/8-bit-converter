@@ -1,6 +1,3 @@
-# Run "pip install -e ." to install the package in editable mode
-# Then, use "8-bit-cli" and "8-bit-gui" from any directory
-
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
