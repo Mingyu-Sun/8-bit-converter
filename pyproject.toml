@@ -1,0 +1,20 @@
+# Run "pip install -e ." to install the package in editable mode
+# Then, use "8-bit-cli" and "8-bit-gui" from any directory
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "8-bit-converter"
+version = "0.1.0"
+authors = [
+  { name="Mingyu Sun", email="sunmingyu@ufl.edu" },
+]
+description = "Convert a given audio file to an 8-bit-style rendition."
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.scripts]
+"8-bit-cli" = "cli:run_cli" # CLI Entry Point
+"8-bit-gui" = "gui:run_gui" # GUI Entry Point

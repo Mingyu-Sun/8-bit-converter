@@ -142,7 +142,8 @@ class ConverterCLI(cmd.Cmd):
         print(f"Unknown command: {line}. Type 'help' for valid commands.")
 
 
-if __name__ == "__main__":
+def run_cli():
+    """ CLI entry point """
     try:
         ConverterCLI().cmdloop()
     except KeyboardInterrupt:

@@ -15,6 +15,7 @@ from event_min_heap import EventMinHeap
 from event_red_black_tree import EventRBTree
 
 def sec_to_minsec(sec):
+    """ Format seconds to minute:second """
     minute, second = divmod(sec, 60)
     return '%02d:%02d' % (minute, second)
 
@@ -75,6 +76,7 @@ def ds_comparison(events):
     return copy1, [t1, t2, t3], [heap.key_comparisons, heap.swaps, rbt.key_comparisons, rbt.rotations]
 
 def to_8_bit(events, sr):
+    """ Re-synthesize sorted events into 8-bit style audio """
     dt = 1.0 / sr
 
     audio_buffer = []

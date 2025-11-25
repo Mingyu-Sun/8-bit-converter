@@ -5,8 +5,9 @@ from core import *
 
 from PyQt6 import QtCore, QtWidgets, QtMultimedia
 import pyqtgraph as pg
+
 # Run the following command to re-generate updated GUI: pyuic6 src/mainwindow.ui -o src/main_window.py
-from src.main_window import Ui_MainWindow
+from main_window import Ui_MainWindow
 
 
 """ ==================== Helper ==================== """
@@ -47,13 +48,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.INPUT_PATH = ""
         self.INPUT_DATA = None
         self.INPUT_SR = None
-        self.LENGTH = None
         self.OUTPUT_PATH = ""
         self.OUTPUT_DATA = None
         self.OUTPUT_SR = None
         self.OUTPUT_FORMAT = ""
-        self.MIDI = None
-        self.TIMES = None
         self.scene = None
 
         """ ==================== Audio Player ==================== """
@@ -80,8 +78,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.INPUT_DATA = to_mono(self.INPUT_DATA)
 
-            self.LENGTH = len(self.INPUT_DATA) / self.INPUT_SR
-
             if self.OUTPUT_SR:
                 self.OUTPUT_DATA = None
                 self.OUTPUT_SR = None
@@ -89,7 +85,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.input_file_btn.setText(os.path.basename(self.INPUT_PATH))
             self.input_sr.setText(str(self.INPUT_SR))
-            self.length.setText(f"{sec_to_minsec(self.LENGTH)}")
+            self.length.setText(f"{sec_to_minsec(len(self.INPUT_DATA) / self.INPUT_SR)}")
             self.convert_btn.setEnabled(True)
 
             self.plot_orig()
@@ -148,7 +144,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.playpause_btn.setText("Play")
             self.player.pause()
 
-if __name__ == "__main__":
+def run_gui():
+    """ GUI entry point """
     app = QtWidgets.QApplication([])
 
     window = MainWindow()
