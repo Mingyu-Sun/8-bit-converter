@@ -10,15 +10,8 @@ authors = [
 ]
 description = "Convert a given audio file to an 8-bit-style rendition."
 readme = "README.md"
-requires-python = ">=3.9"
-dependencies = [
-    "basic-pitch==0.4.0",
-    "numpy>=2.0.2",
-    "PyQt6==6.10.0",
-    "pyqtgraph>=0.13.7",
-    "soundfile==0.13.1",
-]
+requires-python = "<=3.11"
 
 [project.scripts]
-"8_bit_cli" = "cli:run_cli" # CLI Entry Point
-"8_bit_gui" = "gui:run_gui" # GUI Entry Point
+"8_bit_CLI" = "cli:run_cli" # CLI Entry Point
+"8_bit_GUI" = "gui:run_gui" # GUI Entry Point
