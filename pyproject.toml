@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Convert a given audio file to an 8-bit-style rendition."
 readme = "README.md"
-requires-python = "<=3.11"
+requires-python = ">= 3.7, < 3.12"
 
 [project.scripts]
 "8_bit_CLI" = "cli:run_cli" # CLI Entry Point
