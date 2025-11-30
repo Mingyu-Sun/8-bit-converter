@@ -9,7 +9,7 @@ Convert a given audio file into an 8-bit-style rendition.
 
 ## Requirements
 
-**Python Version:** This project requires Python version 3.7 to 3.11. 
+**Python Version:** This project requires Python version 3.10 or 3.11. 
 It is not compatible with Python 3.12 or newer due to a dependency constraint.
 
 ## Usage
@@ -19,7 +19,7 @@ This application provides both a Command-Line Interface (CLI) and a Graphical Us
 If you wish to modify the source code, follow these steps to set up a reproducible development environment.
 
 1. Ensure Correct Python Installation: Before proceeding, verify you are using a compatible Python version 
-(3.7 ≤ Python ≤ 3.11).
+(3.10 ≤ Python ≤ 3.11).
 
 2. Clone the repository and navigate into the directory:
     ```shell
