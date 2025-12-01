@@ -108,7 +108,7 @@ class ConverterCLI(cmd.Cmd):
               f"# rotations: {num_of_operation[3]}".center(58)))
 
         output_data = to_8_bit(sorted_events, int(output_sample_rate))
-        sf.write(f"{os.path.basename(input_path)}_8bit.{output_format}", output_data, int(output_sample_rate))
+        sf.write(f"{os.path.splitext(os.path.basename(input_path))[0]}_8bit.{output_format}", output_data, int(output_sample_rate))
         print(f'>>> Converted "{input_path}" -> "{os.path.basename(input_path)}_8bit.{output_format}"\n')
 
 
